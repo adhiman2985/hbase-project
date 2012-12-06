@@ -125,6 +125,7 @@ public class Reference implements Writable {
 
   public Path write(final FileSystem fs, final Path p)
   throws IOException {
+	//adhiman:fs.create()
     FSDataOutputStream out = fs.create(p, false);
     try {
       write(out);

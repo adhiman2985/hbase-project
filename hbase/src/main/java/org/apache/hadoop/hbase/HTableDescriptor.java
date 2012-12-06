@@ -59,6 +59,7 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
 
   private String nameAsString = "";
 
+  private short replication = 0;
   /**
    * A map which holds the metadata information of the table. This metadata 
    * includes values like IS_ROOT, IS_META, DEFERRED_LOG_FLUSH, SPLIT_POLICY,
@@ -562,6 +563,13 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
     return this.nameAsString;
   }
   
+  public void setReplication(short replication) {
+	  this.replication = replication;
+  }
+
+  public short getReplication() {
+	  return replication;
+  }
   /**
    * This get the class associated with the region split policy which 
    * determines when a region split should occur.  The class used by
@@ -680,6 +688,10 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
     s.append(" => '");
     s.append(Bytes.toString(name));
     s.append("'");
+    s.append(HConstants.REPLICATION);
+    s.append(" => '");
+    s.append(Short.toString(replication));
+    s.append("'");
     for (Map.Entry<ImmutableBytesWritable, ImmutableBytesWritable> e:
         values.entrySet()) {
       String key = Bytes.toString(e.getKey().get());
@@ -701,6 +713,8 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
       s.append("'");
     }
     s.append(", ");
+    
+    s.append(", ");
     s.append(FAMILIES);
     s.append(" => ");
     s.append(families.values());
@@ -718,6 +732,10 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
     s.append(HConstants.NAME);
     s.append(" => '");
     s.append(Bytes.toString(name));
+    s.append("'");
+    s.append(HConstants.REPLICATION);
+    s.append(" => '");
+    s.append(Short.toString(replication));
     s.append("'");
     for (Map.Entry<ImmutableBytesWritable, ImmutableBytesWritable> e:
         values.entrySet()) {
@@ -806,6 +824,7 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
     // version 3+
     name = Bytes.readByteArray(in);
     nameAsString = Bytes.toString(this.name);
+    replication = in.readShort();
     setRootRegion(in.readBoolean());
     setMetaRegion(in.readBoolean());
     values.clear();
@@ -837,6 +856,7 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
   public void write(DataOutput out) throws IOException {
 	out.writeInt(TABLE_DESCRIPTOR_VERSION);
     Bytes.writeByteArray(out, name);
+    out.writeShort(replication);
     out.writeBoolean(isRootRegion());
     out.writeBoolean(isMetaRegion());
     out.writeInt(values.size());

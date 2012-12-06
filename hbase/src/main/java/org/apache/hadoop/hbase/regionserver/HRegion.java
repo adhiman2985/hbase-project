@@ -723,7 +723,7 @@ public class HRegion implements HeapSize { // , Writable{
       FSUtils.delete(fs, tmpPath, true);
     }
     
-    FSDataOutputStream out = FSUtils.create(fs, tmpPath, perms);
+    FSDataOutputStream out = FSUtils.create(fs, tmpPath, perms, (short) 2);
 
     try {
       this.regionInfo.write(out);

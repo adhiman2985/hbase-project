@@ -172,11 +172,12 @@ module Hbase
       # Start defining the table
       htd = org.apache.hadoop.hbase.HTableDescriptor.new(table_name)
       splits = nil
+      replication = nil
       # Args are either columns or splits, add them to the table definition
       # TODO: add table options support
       args.each do |arg|
-        unless arg.kind_of?(String) || arg.kind_of?(Hash)
-          raise(ArgumentError, "#{arg.class} of #{arg.inspect} is not of Hash or String type")
+        unless arg.kind_of?(String) || arg.kind_of?(Hash) || arg.kind_of?(Fixnum)
+          raise(ArgumentError, "#{arg.class} of #{arg.inspect} is not of Hash, String or Fixnum type")
         end
 
         if arg.kind_of?(Hash) and (arg.has_key?(SPLITS) or arg.has_key?(SPLITS_FILE))
@@ -200,12 +201,22 @@ module Hbase
           raise(ArgumentError, "Column family configuration should be specified in a separate clause") if arg.has_key?(NAME)
           raise(ArgumentError, "Number of regions must be specified") unless arg.has_key?(NUMREGIONS)
           raise(ArgumentError, "Split algorithm must be specified") unless arg.has_key?(SPLITALGO)
-          raise(ArgumentError, "Number of regions must be geter than 1") unless arg[NUMREGIONS] > 1
+          raise(ArgumentError, "Number of regions must be greater than 1") unless arg[NUMREGIONS] > 1
           num_regions = arg[NUMREGIONS]
           split_algo = org.apache.hadoop.hbase.util.RegionSplitter.newSplitAlgoInstance(@conf, arg[SPLITALGO])
           splits = split_algo.split(JInteger.valueOf(num_regions))
+        elsif arg.kind_of?(Hash) and arg.has_key?(REPLICATION)
+          raise(ArgumentError, "Column family configuration should be specified in a separate clause") if arg.has_key?(NAME)
+          raise(ArgumentError, "Replication must be at least 1") unless arg[REPLICATION] >= 1
+          replication = arg[REPLICATION]
         else
           # Add column to the table
+	      if arg.kind_of?(Hash) and arg.has_key?(REPLICATION)
+          	puts "#{arg.type}"
+            puts "#{arg[REPLICATION]}"
+          else 
+          	puts "no idea"
+          end
           descriptor = hcd(arg, htd)
           if arg[COMPRESSION_COMPACT]
             descriptor.setValue(COMPRESSION_COMPACT, arg[COMPRESSION_COMPACT])
@@ -214,13 +225,27 @@ module Hbase
         end
       end
 
-      if splits.nil?
-        # Perform the create table call
-        @admin.createTable(htd)
-      else
-        # Perform the create table call
-        @admin.createTable(htd, splits)
-      end
+	  if replication.nil?
+	      if splits.nil?
+	        # Perform the create table call
+          	puts "rep-null split-null"
+	        @admin.createTable(htd)
+	      else
+	        # Perform the create table call
+          	puts "rep-null split-non-null"
+	        @admin.createTable(htd, splits)
+	      end
+	  else
+	      if splits.nil?
+	        # Perform the create table call
+          	puts "rep-non-null split-null"
+	        @admin.createTableReplication(htd, replication)
+	      else
+	        # Perform the create table call
+          	puts "rep-non-null split-non-null"
+	        @admin.createTableReplication(htd, replication, splits)
+	      end
+	  end 
     end
     
     #----------------------------------------------------------------------------------------------

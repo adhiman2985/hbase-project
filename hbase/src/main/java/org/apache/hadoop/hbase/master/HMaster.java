@@ -1156,7 +1156,7 @@ Server {
     }
 
   }
-
+  
   public void createTable(HTableDescriptor hTableDescriptor,
     byte [][] splitKeys)
   throws IOException {
