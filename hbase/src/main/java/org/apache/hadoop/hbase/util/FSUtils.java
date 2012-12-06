@@ -27,10 +27,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -128,15 +126,11 @@ public abstract class FSUtils {
    * @return output stream to the created file
    * @throws IOException if the file cannot be created
    */
-//  public static FSDataOutputStream create(FileSystem fs, Path path,
-//      FsPermission perm, short replication) throws IOException {
-//    return create(fs, path, perm, true, replication);
-//  }
-
   public static FSDataOutputStream create(FileSystem fs, Path path,
-	      FsPermission perm, short replication) throws IOException {
-	    return create(fs, path, perm, true, replication);
-	  }
+      FsPermission perm) throws IOException {
+    return create(fs, path, perm, true);
+  }
+
   /**
    * Create the specified file on the filesystem. By default, this will:
    * <ol>
@@ -155,52 +149,15 @@ public abstract class FSUtils {
    * @return output stream to the created file
    * @throws IOException if the file cannot be created
    */
-//  public static FSDataOutputStream create(FileSystem fs, Path path,
-//      FsPermission perm, boolean overwrite, short replication) throws IOException {
-//    LOG.debug("Creating file:" + path + "with permission:" + perm);
-//
-//    //adhiman:fs.create()
-////    Configuration conf = fs.getConf();
-////    short replication = fs.getDefaultReplication();
-////    Map<String, String>tableReplicationMap = conf.getValByRegex("dfs.replication.table.[a-z]+");
-////    Set<String> tableReplicationKeys = tableReplicationMap.keySet();
-////    Iterator<String> it = tableReplicationKeys.iterator();
-////    String hbaseDir = conf.get("hbase.rootdir");
-////    while(it.hasNext()) {
-////    	String key = it.next();
-////    	String table = key.substring(key.lastIndexOf('.') + 1);
-////    	String tablePath = null;
-////    	if(hbaseDir.endsWith("/")) {
-////    		tablePath = hbaseDir + table;
-////    	}
-////    	else {
-////    		tablePath = hbaseDir + "/" + table;
-////    	}
-////    	if(path.toString().indexOf(tablePath) != -1) {
-////    		String rep = fs.getConf().get(key);
-////    		replication = Short.parseShort(rep);
-////    	}
-////    }
-//    return fs.create(path, perm, overwrite,
-//            fs.getConf().getInt("io.file.buffer.size", 4096),
-//            replication, fs.getDefaultBlockSize(), null);
-//  }
-
-//  public static FSDataOutputStream create(FileSystem fs, Path path,
-//	      FsPermission perm, boolean overwrite) throws IOException {
-//	    LOG.debug("Creating file:" + path + "with permission:" + perm);
-//	    return fs.create(path, perm, overwrite,
-//	            fs.getConf().getInt("io.file.buffer.size", 4096),
-//	            fs.getDefaultReplication(), fs.getDefaultBlockSize(), null);
-//	  }
-
   public static FSDataOutputStream create(FileSystem fs, Path path,
-	      FsPermission perm, boolean overwrite, short replication) throws IOException {
-	    LOG.debug("Creating file:" + path + "with permission:" + perm);
-	    return fs.create(path, perm, overwrite,
-	            fs.getConf().getInt("io.file.buffer.size", 4096),
-	            replication, fs.getDefaultBlockSize(), null);
-	  }
+      FsPermission perm, boolean overwrite) throws IOException {
+    LOG.debug("Creating file:" + path + "with permission:" + perm);
+
+    return fs.create(path, perm, overwrite,
+        fs.getConf().getInt("io.file.buffer.size", 4096),
+        fs.getDefaultReplication(), fs.getDefaultBlockSize(), null);
+  }
+
   /**
    * Get the file permissions specified in the configuration, if they are
    * enabled.
@@ -410,7 +367,6 @@ public abstract class FSUtils {
     Path versionFile = new Path(rootdir, HConstants.VERSION_FILE_NAME);
     while (true) {
       try {
-    	//adhiman:fs.create()
         FSDataOutputStream s = fs.create(versionFile);
         s.writeUTF(version);
         LOG.debug("Created version file at " + rootdir.toString() +
@@ -509,7 +465,6 @@ public abstract class FSUtils {
     while (true) {
       try {
         Path filePath = new Path(rootdir, HConstants.CLUSTER_ID_FILE_NAME);
-        //adhiman:fs.create()
         FSDataOutputStream s = fs.create(filePath);
         s.writeUTF(clusterId);
         s.close();

@@ -22,7 +22,7 @@
 <configuration>
   <property>
     <name>hbase.rootdir</name>
-    <value>hdfs://localhost:9000/hbase/</value>
+    <value>file:///tmp/hbase-${user.name}/hbase</value>
     <description>The directory shared by region servers and into
     which HBase persists.  The URL should be 'fully-qualified'
     to include the filesystem scheme.  For example, to specify the
@@ -49,7 +49,7 @@
   </property>
   <property>
     <name>hbase.tmp.dir</name>
-    <value>/home/ashutosh/work/temp/tmp/hbase-${user.name}</value>
+    <value>/tmp/hbase-${user.name}</value>
     <description>Temporary directory on the local filesystem.
     Change this setting to point to a location more permanent
     than '/tmp' (The '/tmp' directory is often cleared on
@@ -385,12 +385,6 @@
       a feature which works to prevent heap fragmentation under
       heavy write loads. This can reduce the frequency of stop-the-world
       GC pauses on large heaps.
-    </description>
-  </property>
-  <property>
-    <name>dfs.replication</name>
-    <value>4</value>
-    <description>The replication count for HLog and HFile storage. Should not be greater than HDFS datanode count.
     </description>
   </property>
   <property>
@@ -765,7 +759,7 @@
 
   <property skipInDoc="true">
     <name>hbase.defaults.for.version</name>
-    <value>0.94.3-SNAPSHOT</value>
+    <value>@@@VERSION@@@</value>
     <description>
     This defaults file was compiled for version @@@VERSION@@@. This variable is used
     to make sure that a user doesn't have an old version of hbase-default.xml on the
@@ -894,11 +888,4 @@
     default log cleaners in the list as they will be overwritten in hbase-site.xml.
     </description>
   </property>
-<!-- Adhiman added -->
-  <property>
-    <name>dfs.replication.table.table1</name>
-    <value>1</value>
-    <description>Replication for table1</description>
-  </property>
-
 </configuration>

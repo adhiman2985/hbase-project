@@ -389,7 +389,7 @@ public class HFile {
             "filesystem/path or path");
       }
       if (path != null) {
-        ostream = AbstractHFileWriter.createOutputStream(conf, fs, path, (short) 2);
+        ostream = AbstractHFileWriter.createOutputStream(conf, fs, path);
       }
       return createWriter(fs, path, ostream, blockSize,
           compression, encoder, comparator, checksumType, bytesPerChecksum);

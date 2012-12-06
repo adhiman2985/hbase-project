@@ -105,7 +105,7 @@ public class HFileWriterV1 extends AbstractHFileWriter {
       int blockSize, Compression.Algorithm compress,
       HFileDataBlockEncoder blockEncoder,
       final KeyComparator comparator) throws IOException {
-    super(cacheConf, ostream == null ? createOutputStream(conf, fs, path, (short) 2) : ostream, path,
+    super(cacheConf, ostream == null ? createOutputStream(conf, fs, path) : ostream, path,
         blockSize, compress, blockEncoder, comparator);
     SchemaMetrics.configureGlobally(conf);
   }

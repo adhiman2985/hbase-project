@@ -488,7 +488,7 @@ public class HBaseAdmin implements Abortable, Closeable {
    */
   public void createTableAsync(HTableDescriptor desc, byte [][] splitKeys)
   throws IOException {
-	  HTableDescriptor.isLegalTableName(desc.getName());
+    HTableDescriptor.isLegalTableName(desc.getName());
     if(splitKeys != null && splitKeys.length > 0) {
       Arrays.sort(splitKeys, Bytes.BYTES_COMPARATOR);
       // Verify there are no duplicate split keys
@@ -1813,16 +1813,5 @@ public class HBaseAdmin implements Abortable, Closeable {
       cleanupCatalogTracker(ct);
     }
     return state;
-  }
-  
-  public void createTableReplication(final HTableDescriptor desc, short replication, byte [][] splitKeys)
-  throws IOException {
-	desc.setReplication(replication);
-	createTable(desc, splitKeys);
-  }
-
-  public void createTableReplication(final HTableDescriptor desc, short replication)
-  throws IOException {
-	createTableReplication(desc, replication, null);
   }
 }
