@@ -20,6 +20,7 @@
 package org.apache.hadoop.hbase.mapreduce;
 
 import org.apache.hadoop.hbase.util.Base64;
+import org.apache.hadoop.hbase.util.FSTableDescriptors;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -224,7 +227,7 @@ public class ImportTsv {
     String hfileOutPath = conf.get(BULK_OUTPUT_CONF_KEY);
     if (hfileOutPath != null) {
       if (!doesTableExist(tableName)) {
-        createTable(conf, tableName);
+        createTable(conf, tableName, Short.parseShort(args[2]));
       }
       HTable table = new HTable(conf, tableName);
       job.setReducerClass(PutSortReducer.class);
@@ -250,9 +253,10 @@ public class ImportTsv {
     return hbaseAdmin.tableExists(tableName.getBytes());
   }
 
-  private static void createTable(Configuration conf, String tableName)
+  private static void createTable(Configuration conf, String tableName, short replication)
       throws IOException {
     HTableDescriptor htd = new HTableDescriptor(tableName.getBytes());
+    htd.setReplication(replication);
     String columns[] = conf.getStrings(COLUMNS_CONF_KEY);
     Set<String> cfSet = new HashSet<String>();
     for (String aColumn : columns) {
@@ -351,7 +355,42 @@ public class ImportTsv {
     }
     hbaseAdmin = new HBaseAdmin(conf);
     Job job = createSubmittableJob(conf, otherArgs);
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
+    if(job.waitForCompletion(true)) {
+    	System.out.println("Bulk data loaded. Flushing to file system.");
+    	System.out.println("Flushed to file system.");
+    	hbaseAdmin.flush(otherArgs[0].getBytes());
+        FileSystem fs = FileSystem.get(conf);
+        String hbasePath = conf.get("hbase.rootdir");
+        if(hbasePath.endsWith("/")) {
+        	hbasePath += otherArgs[0];
+        } else {
+        	hbasePath = hbasePath + "/" + otherArgs[0];
+        }
+        short replication = Short.parseShort(otherArgs[3]);
+        Path tablePath = new Path(hbasePath);
+    	System.out.println("Updating the replication to " + replication);
+    	updateReplication(fs, new Path(conf.get("hbase.rootdir")), tablePath, replication, otherArgs[0]);
+    }
   }
 
+  private static void updateReplication(FileSystem fs, Path root, Path path, short replication, String tableName) {
+      try {
+		FileStatus[] fileStatus = fs.listStatus(path);
+		for (FileStatus status : fileStatus) {
+			if(status.isDir()) {
+				updateReplication(fs, root, status.getPath(), replication, tableName);
+			} else {
+		    	System.out.println("updating file: " + status.getPath().toString());
+		    	if(status.getPath().toString().contains(".tableinfo.")) {
+			    	HTableDescriptor htd = hbaseAdmin.getTableDescriptor(tableName.getBytes());
+			    	htd.setReplication(replication);
+			    	FSTableDescriptors.createTableDescriptor(fs, root, htd, true);
+				}
+				fs.setReplication(status.getPath(), replication);
+			}
+		}
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
+  }
 }

@@ -624,7 +624,7 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
    * maxFileSize, then the region split is triggered. This defaults to a value of 
    * 256 MB.
    * <p>
-a   * This is not an absolute value and might vary. Assume that a single row exceeds 
+   * This is not an absolute value and might vary. Assume that a single row exceeds 
    * the maxFileSize then the storeFileSize will be greater than maxFileSize since
    * a single row cannot be split across multiple regions 
    * </p>
@@ -694,6 +694,7 @@ a   * This is not an absolute value and might vary. Assume that a single row exc
     s.append(" => '");
     s.append(Bytes.toString(name));
     s.append("'");
+    s.append(", ");
     s.append(HConstants.REPLICATION);
     s.append(" => '");
     s.append(Short.toString(replication));
@@ -719,8 +720,6 @@ a   * This is not an absolute value and might vary. Assume that a single row exc
       s.append("'");
     }
     s.append(", ");
-    
-    s.append(", ");
     s.append(FAMILIES);
     s.append(" => ");
     s.append(families.values());
@@ -739,6 +738,7 @@ a   * This is not an absolute value and might vary. Assume that a single row exc
     s.append(" => '");
     s.append(Bytes.toString(name));
     s.append("'");
+    s.append(", ");
     s.append(HConstants.REPLICATION);
     s.append(" => '");
     s.append(Short.toString(replication));
