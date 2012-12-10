@@ -29,7 +29,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.util.FSUtils;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -126,6 +125,7 @@ public class Reference implements Writable {
   public Path write(final FileSystem fs, final Path p)
   throws IOException {
 	//adhiman:fs.create()
+	//adhiman:replication
     FSDataOutputStream out = fs.create(p, false);
     try {
       write(out);

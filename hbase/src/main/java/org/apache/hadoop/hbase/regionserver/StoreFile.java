@@ -684,7 +684,8 @@ public class StoreFile extends SchemaConfigured {
     private final CacheConfig cacheConf;
     private final FileSystem fs;
     private final int blockSize;
-
+    
+    private short replication;
     private Compression.Algorithm compressAlgo =
         HFile.DEFAULT_COMPRESSION_ALGORITHM;
     private HFileDataBlockEncoder dataBlockEncoder =
@@ -779,6 +780,12 @@ public class StoreFile extends SchemaConfigured {
       this.bytesPerChecksum = bytesPerChecksum;
       return this;
     }
+    
+    public WriterBuilder withReplication(short replication) {
+    	this.replication = replication;
+    	return this;
+    }
+    
 
     /**
      * Create a store file writer. Client is responsible for closing file when
@@ -814,7 +821,7 @@ public class StoreFile extends SchemaConfigured {
       }
       return new Writer(fs, filePath, blockSize, compressAlgo, dataBlockEncoder,
           conf, cacheConf, comparator, bloomType, maxKeyCount, checksumType,
-          bytesPerChecksum);
+          bytesPerChecksum, replication);
     }
   }
 
@@ -956,7 +963,7 @@ public class StoreFile extends SchemaConfigured {
         HFileDataBlockEncoder dataBlockEncoder, final Configuration conf,
         CacheConfig cacheConf,
         final KVComparator comparator, BloomType bloomType, long maxKeys,
-        final ChecksumType checksumType, final int bytesPerChecksum)
+        final ChecksumType checksumType, final int bytesPerChecksum, short replication)
         throws IOException {
       this.dataBlockEncoder = dataBlockEncoder != null ?
           dataBlockEncoder : NoOpDataBlockEncoder.INSTANCE;
@@ -968,6 +975,7 @@ public class StoreFile extends SchemaConfigured {
           .withComparator(comparator.getRawComparator())
           .withChecksumType(checksumType)
           .withBytesPerChecksum(bytesPerChecksum)
+          .withReplication(replication)
           .create();
 
       this.kvComparator = comparator;

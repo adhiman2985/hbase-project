@@ -105,6 +105,7 @@ public class CompressionTest {
   public static void doSmokeTest(FileSystem fs, Path path, String codec)
   throws Exception {
     Configuration conf = HBaseConfiguration.create();
+    //adhiman:replication need to add replication here. its a test, so i didn't bother to add
     HFile.Writer writer = HFile.getWriterFactoryNoCache(conf)
         .withPath(fs, path)
         .withCompression(codec)

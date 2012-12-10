@@ -723,7 +723,7 @@ public class HRegion implements HeapSize { // , Writable{
       FSUtils.delete(fs, tmpPath, true);
     }
     
-    FSDataOutputStream out = FSUtils.create(fs, tmpPath, perms, (short) 2);
+    FSDataOutputStream out = FSUtils.create(fs, tmpPath, perms, this.htableDescriptor.getReplication());
 
     try {
       this.regionInfo.write(out);
@@ -1218,7 +1218,7 @@ public class HRegion implements HeapSize { // , Writable{
         doRegionCompactionPrep();
         try {
           status.setStatus("Compacting store " + cr.getStore());
-          cr.getStore().compact(cr);
+          cr.getStore().compact(cr, this.htableDescriptor.getReplication());
         } catch (InterruptedIOException iioe) {
           String msg = "compaction interrupted by user";
           LOG.info(msg, iioe);
@@ -1455,9 +1455,8 @@ public class HRegion implements HeapSize { // , Writable{
       // Keep running vector of all store files that includes both old and the
       // just-made new flush store file. The new flushed file is still in the
       // tmp directory.
-
       for (StoreFlusher flusher : storeFlushers) {
-        flusher.flushCache(status);
+        flusher.flushCache(status, this.htableDescriptor.getReplication());
       }
 
       // Switch snapshot (in memstore) -> new hfile (thus causing

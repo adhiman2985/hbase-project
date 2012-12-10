@@ -530,10 +530,9 @@ public class FSTableDescriptors implements TableDescriptors {
   private static void writeHTD(final FileSystem fs, final Path p,
       final HTableDescriptor htd)
   throws IOException {
-//    FSDataOutputStream out = fs.create(p, false);
     FSDataOutputStream out = fs.create(p, false, 
             4096,
-            (short)10,
+            htd.getReplication(),
             fs.getDefaultBlockSize());
     try {
       htd.write(out);

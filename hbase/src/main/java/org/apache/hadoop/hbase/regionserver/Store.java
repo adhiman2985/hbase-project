@@ -667,12 +667,12 @@ public class Store extends SchemaConfigured implements HeapSize {
       SortedSet<KeyValue> snapshot,
       TimeRangeTracker snapshotTimeRangeTracker,
       AtomicLong flushedSize,
-      MonitoredTask status) throws IOException {
+      MonitoredTask status, short replication) throws IOException {
     // If an exception happens flushing, we let it out without clearing
     // the memstore snapshot.  The old snapshot will be returned when we say
     // 'snapshot', the next time flush comes around.
     return internalFlushCache(
-        snapshot, logCacheFlushId, snapshotTimeRangeTracker, flushedSize, status);
+        snapshot, logCacheFlushId, snapshotTimeRangeTracker, flushedSize, status, replication);
   }
 
   /*
@@ -687,7 +687,7 @@ public class Store extends SchemaConfigured implements HeapSize {
       final long logCacheFlushId,
       TimeRangeTracker snapshotTimeRangeTracker,
       AtomicLong flushedSize,
-      MonitoredTask status)
+      MonitoredTask status, short replication)
       throws IOException {
     StoreFile.Writer writer;
     // Find the smallest read point across all the Scanners.
@@ -729,7 +729,7 @@ public class Store extends SchemaConfigured implements HeapSize {
       synchronized (flushLock) {
         status.setStatus("Flushing " + this + ": creating writer");
         // A. Write the map out to the disk
-        writer = createWriterInTmp(set.size());
+        writer = createWriterInTmp(set.size(), replication);
         writer.setTimeRangeTracker(snapshotTimeRangeTracker);
         pathName = writer.getPath();
         try {
@@ -826,9 +826,9 @@ public class Store extends SchemaConfigured implements HeapSize {
    * @param maxKeyCount
    * @return Writer for a new StoreFile in the tmp dir.
    */
-  private StoreFile.Writer createWriterInTmp(int maxKeyCount)
+  private StoreFile.Writer createWriterInTmp(int maxKeyCount, short replication)
   throws IOException {
-    return createWriterInTmp(maxKeyCount, this.compression, false);
+    return createWriterInTmp(maxKeyCount, this.compression, false, replication);
   }
 
   /*
@@ -838,7 +838,7 @@ public class Store extends SchemaConfigured implements HeapSize {
    * @return Writer for a new StoreFile in the tmp dir.
    */
   public StoreFile.Writer createWriterInTmp(int maxKeyCount,
-    Compression.Algorithm compression, boolean isCompaction)
+    Compression.Algorithm compression, boolean isCompaction, short replication)
   throws IOException {
     final CacheConfig writerCacheConf;
     if (isCompaction) {
@@ -858,6 +858,7 @@ public class Store extends SchemaConfigured implements HeapSize {
             .withChecksumType(checksumType)
             .withBytesPerChecksum(bytesPerChecksum)
             .withCompression(compression)
+            .withReplication(replication)
             .build();
     // The store file writer's path does not include the CF name, so we need
     // to configure the HFile writer directly.
@@ -982,7 +983,7 @@ public class Store extends SchemaConfigured implements HeapSize {
    *          compaction details obtained from requestCompaction()
    * @throws IOException
    */
-  void compact(CompactionRequest cr) throws IOException {
+  void compact(CompactionRequest cr, short replication) throws IOException {
     if (cr == null || cr.getFiles().isEmpty()) {
       return;
     }
@@ -1010,7 +1011,7 @@ public class Store extends SchemaConfigured implements HeapSize {
     StoreFile sf = null;
     try {
       StoreFile.Writer writer = compactStore(filesToCompact, cr.isMajor(),
-          maxId);
+          maxId, replication);
       // Move the compaction into place.
       sf = completeCompaction(filesToCompact, writer);
       if (region.getCoprocessorHost() != null) {
@@ -1070,7 +1071,7 @@ public class Store extends SchemaConfigured implements HeapSize {
 
     try {
       // Ready to go. Have list of files to compact.
-      StoreFile.Writer writer = compactStore(filesToCompact, isMajor, maxId);
+      StoreFile.Writer writer = compactStore(filesToCompact, isMajor, maxId, (short) 0);
       // Move the compaction into place.
       StoreFile sf = completeCompaction(filesToCompact, writer);
       if (region.getCoprocessorHost() != null) {
@@ -1506,7 +1507,7 @@ public class Store extends SchemaConfigured implements HeapSize {
    * @throws IOException
    */
   StoreFile.Writer compactStore(final Collection<StoreFile> filesToCompact,
-                               final boolean majorCompaction, final long maxId)
+                               final boolean majorCompaction, final long maxId, short replication)
       throws IOException {
     // calculate maximum key count after compaction (for blooms)
     int maxKeyCount = 0;
@@ -1592,7 +1593,7 @@ public class Store extends SchemaConfigured implements HeapSize {
           hasMore = scanner.next(kvs, this.compactionKVMax);
           if (writer == null && !kvs.isEmpty()) {
             writer = createWriterInTmp(maxKeyCount, this.compactionCompression,
-                true);
+                true, replication);
           }
           if (writer != null) {
             // output to writer:
@@ -2282,9 +2283,9 @@ public class Store extends SchemaConfigured implements HeapSize {
     }
 
     @Override
-    public void flushCache(MonitoredTask status) throws IOException {
+    public void flushCache(MonitoredTask status, short replication) throws IOException {
       storeFilePath = Store.this.flushCache(
-        cacheFlushId, snapshot, snapshotTimeRangeTracker, flushedSize, status);
+        cacheFlushId, snapshot, snapshotTimeRangeTracker, flushedSize, status, replication);
     }
 
     @Override

@@ -31,12 +31,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.io.hfile.Compression;
 import org.apache.hadoop.hbase.regionserver.StoreFile;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hdfs.tools.DFSAdmin;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
@@ -568,6 +570,10 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
   }
 
   public short getReplication() {
+	  if(replication == 0) {
+		  Configuration conf = HBaseConfiguration.create();
+		  replication = Short.parseShort(conf.get("dfs.replication"));
+	  }
 	  return replication;
   }
   /**
@@ -618,7 +624,7 @@ public class HTableDescriptor implements WritableComparable<HTableDescriptor> {
    * maxFileSize, then the region split is triggered. This defaults to a value of 
    * 256 MB.
    * <p>
-   * This is not an absolute value and might vary. Assume that a single row exceeds 
+a   * This is not an absolute value and might vary. Assume that a single row exceeds 
    * the maxFileSize then the storeFileSize will be greater than maxFileSize since
    * a single row cannot be split across multiple regions 
    * </p>

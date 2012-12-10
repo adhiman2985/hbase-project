@@ -373,7 +373,7 @@ public class LoadIncrementalHFiles extends Configured implements Tool {
     Path botOut = new Path(tmpDir, uniqueName + ".bottom");
     Path topOut = new Path(tmpDir, uniqueName + ".top");
     splitStoreFile(getConf(), hfilePath, familyDesc, splitKey,
-        botOut, topOut);
+        botOut, topOut, table.getReplication());
 
     // Add these back at the *front* of the queue, so there's a lower
     // chance that the region will just split again before we get there.
@@ -505,14 +505,14 @@ public class LoadIncrementalHFiles extends Configured implements Tool {
   static void splitStoreFile(
       Configuration conf, Path inFile,
       HColumnDescriptor familyDesc, byte[] splitKey,
-      Path bottomOut, Path topOut) throws IOException
+      Path bottomOut, Path topOut, short replication) throws IOException
   {
     // Open reader with no block cache, and not in-memory
     Reference topReference = new Reference(splitKey, Range.top);
     Reference bottomReference = new Reference(splitKey, Range.bottom);
 
-    copyHFileHalf(conf, inFile, topOut, topReference, familyDesc);
-    copyHFileHalf(conf, inFile, bottomOut, bottomReference, familyDesc);
+    copyHFileHalf(conf, inFile, topOut, topReference, familyDesc, replication);
+    copyHFileHalf(conf, inFile, bottomOut, bottomReference, familyDesc, replication);
   }
 
   /**
@@ -520,7 +520,7 @@ public class LoadIncrementalHFiles extends Configured implements Tool {
    */
   private static void copyHFileHalf(
       Configuration conf, Path inFile, Path outFile, Reference reference,
-      HColumnDescriptor familyDescriptor)
+      HColumnDescriptor familyDescriptor, short replication)
   throws IOException {
     FileSystem fs = inFile.getFileSystem(conf);
     CacheConfig cacheConf = new CacheConfig(conf);
@@ -546,6 +546,7 @@ public class LoadIncrementalHFiles extends Configured implements Tool {
               .withBloomType(bloomFilterType)
               .withChecksumType(Store.getChecksumType(conf))
               .withBytesPerChecksum(Store.getBytesPerChecksum(conf))
+              .withReplication(replication)
               .build();
       HFileScanner scanner = halfReader.getScanner(false, false, false);
       scanner.seekTo();

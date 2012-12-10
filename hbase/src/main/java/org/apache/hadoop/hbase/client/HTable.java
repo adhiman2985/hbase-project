@@ -404,6 +404,9 @@ public class HTable implements HTableInterface {
       this.connection.getHTableDescriptor(this.tableName));
   }
 
+  public short getReplication() throws IOException {
+	  return this.connection.getHTableDescriptor(this.tableName).getReplication();
+  }
   /**
    * Gets the starting row key for every region in the currently open table.
    * <p>

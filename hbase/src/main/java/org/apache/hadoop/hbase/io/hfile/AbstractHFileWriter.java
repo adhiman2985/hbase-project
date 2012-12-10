@@ -268,7 +268,6 @@ public abstract class AbstractHFileWriter extends SchemaConfigured
       FileSystem fs, Path path, short replication) throws IOException {
     FsPermission perms = FSUtils.getFilePermissions(fs, conf,
         HConstants.DATA_FILE_UMASK_KEY);
-    //adhiman:FSUtils.create()
     return FSUtils.create(fs, path, perms, replication);
   }
 }

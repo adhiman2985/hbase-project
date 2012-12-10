@@ -433,6 +433,7 @@ public class RegionSplitter {
     tmpIn.readFully(rawData);
     tmpIn.close();
     //adhiman:fs.create()
+    //adhiman:replication
     FSDataOutputStream splitOut = fs.create(splitFile);
     splitOut.write(rawData);
 
@@ -743,6 +744,7 @@ public class RegionSplitter {
       // prepare the split file
       Path tmpFile = new Path(tableDir, "_balancedSplit_prepare");
       //adhiman:fs.create()
+      //adhiman:replication
       FSDataOutputStream tmpOut = fs.create(tmpFile);
 
       // calculate all the splits == [daughterRegions] = [(start, splitPoint)]

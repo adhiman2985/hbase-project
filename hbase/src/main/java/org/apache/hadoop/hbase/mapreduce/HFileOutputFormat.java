@@ -159,7 +159,7 @@ public class HFileOutputFormat extends FileOutputFormat<ImmutableBytesWritable, 
 
         // create a new HLog writer, if necessary
         if (wl == null || wl.writer == null) {
-          wl = getNewWriter(family, conf);
+          wl = getNewWriter(family, conf, (short) 0);
         }
 
         // we now have the proper HLog writer. full steam ahead
@@ -190,7 +190,7 @@ public class HFileOutputFormat extends FileOutputFormat<ImmutableBytesWritable, 
        * @return A WriterLength, containing a new HFile.Writer.
        * @throws IOException
        */
-      private WriterLength getNewWriter(byte[] family, Configuration conf)
+      private WriterLength getNewWriter(byte[] family, Configuration conf, short replication)
           throws IOException {
         WriterLength wl = new WriterLength();
         Path familydir = new Path(outputdir, Bytes.toString(family));
@@ -204,6 +204,7 @@ public class HFileOutputFormat extends FileOutputFormat<ImmutableBytesWritable, 
             .withDataBlockEncoder(encoder)
             .withChecksumType(Store.getChecksumType(conf))
             .withBytesPerChecksum(Store.getBytesPerChecksum(conf))
+            .withReplication(replication)
             .create();
         this.writers.put(family, wl);
         return wl;

@@ -97,9 +97,9 @@ public class HFileWriterV2 extends AbstractHFileWriter {
         FSDataOutputStream ostream, int blockSize,
         Compression.Algorithm compress, HFileDataBlockEncoder blockEncoder,
         final KeyComparator comparator, final ChecksumType checksumType,
-        final int bytesPerChecksum) throws IOException {
+        final int bytesPerChecksum, short replication) throws IOException {
       return new HFileWriterV2(conf, cacheConf, fs, path, ostream, blockSize,
-          compress, blockEncoder, comparator, checksumType, bytesPerChecksum);
+          compress, blockEncoder, comparator, checksumType, bytesPerChecksum, replication);
     }
   }
 
@@ -108,9 +108,9 @@ public class HFileWriterV2 extends AbstractHFileWriter {
       FileSystem fs, Path path, FSDataOutputStream ostream, int blockSize,
       Compression.Algorithm compressAlgo, HFileDataBlockEncoder blockEncoder,
       final KeyComparator comparator, final ChecksumType checksumType,
-      final int bytesPerChecksum) throws IOException {
+      final int bytesPerChecksum, short replication) throws IOException {
     super(cacheConf,
-        ostream == null ? createOutputStream(conf, fs, path, (short) 2) : ostream,
+        ostream == null ? createOutputStream(conf, fs, path, replication) : ostream,
         path, blockSize, compressAlgo, blockEncoder, comparator);
     SchemaMetrics.configureGlobally(conf);
     this.checksumType = checksumType;

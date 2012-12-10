@@ -186,14 +186,6 @@ public abstract class FSUtils {
 //            replication, fs.getDefaultBlockSize(), null);
 //  }
 
-//  public static FSDataOutputStream create(FileSystem fs, Path path,
-//	      FsPermission perm, boolean overwrite) throws IOException {
-//	    LOG.debug("Creating file:" + path + "with permission:" + perm);
-//	    return fs.create(path, perm, overwrite,
-//	            fs.getConf().getInt("io.file.buffer.size", 4096),
-//	            fs.getDefaultReplication(), fs.getDefaultBlockSize(), null);
-//	  }
-
   public static FSDataOutputStream create(FileSystem fs, Path path,
 	      FsPermission perm, boolean overwrite, short replication) throws IOException {
 	    LOG.debug("Creating file:" + path + "with permission:" + perm);
@@ -410,7 +402,6 @@ public abstract class FSUtils {
     Path versionFile = new Path(rootdir, HConstants.VERSION_FILE_NAME);
     while (true) {
       try {
-    	//adhiman:fs.create()
         FSDataOutputStream s = fs.create(versionFile);
         s.writeUTF(version);
         LOG.debug("Created version file at " + rootdir.toString() +
@@ -509,7 +500,6 @@ public abstract class FSUtils {
     while (true) {
       try {
         Path filePath = new Path(rootdir, HConstants.CLUSTER_ID_FILE_NAME);
-        //adhiman:fs.create()
         FSDataOutputStream s = fs.create(filePath);
         s.writeUTF(clusterId);
         s.close();
