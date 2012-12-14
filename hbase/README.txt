@@ -1,3 +1,10 @@
+What are we trying to do?
+We are trying to make dfs replication (in hdfs) of each HBase table configurable on a per table basis.
+Also this can be seen in JIRA HBASE-6773
+https://issues.apache.org/jira/browse/HBASE-6773
+
+
+HBase Readme follows:
 Apache HBase [1] is an open-source, distributed, versioned, column-oriented
 store modeled after Google' Bigtable: A Distributed Storage System for
 Structured Data by Chang et al.[2]  Just as Bigtable leverages the distributed
